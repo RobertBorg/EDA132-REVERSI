@@ -8,7 +8,7 @@
 
 class Board {
 public:
-	typedef BitVector<64,2> BoardVector;
+	typedef BitVector<64, 2, 8> BoardVector;
 	typedef BoardPosition<> BoardPosition;
 	const uint_fast8_t Light = 0b10;
 	const uint_fast8_t Dark = 0b11;
