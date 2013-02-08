@@ -3,6 +3,7 @@
 
 #include <cstdint>
 
+
 enum direction_t {
 					UP = 0,
 					UP_RIGHT,
@@ -14,8 +15,13 @@ enum direction_t {
 					UP_LEFT,
 					INVALID_DIRECTION
 				};
+				
+direction_t& operator++(direction_t& dir);
+class BoardDirection;
+bool operator!=(BoardDirection& lhs, int rhs);
 
-struct BoardDirection{
+class BoardDirection {
+public:
 	direction_t dir;
 	int_fast8_t x;
 	int_fast8_t y;
@@ -62,9 +68,5 @@ struct BoardDirection{
 		return *this;
 	}
 };
-
-bool operator!=(BoardDirection& lhs, int rhs) {
-	return lhs.dir != rhs;
-}
 
 #endif /* end of include guard: BOARD_DIRECTION_H__ */
