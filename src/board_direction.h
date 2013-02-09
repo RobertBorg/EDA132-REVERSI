@@ -25,7 +25,7 @@ public:
 	direction_t dir;
 	int_fast8_t x;
 	int_fast8_t y;
-	BoardDirection() : dir(UP), x(0), y(0) {}
+	BoardDirection() : dir(UP), x(0), y(-1) {}
 	BoardDirection& operator++() {
 		switch(++dir) {
 			case UP:

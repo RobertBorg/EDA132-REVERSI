@@ -25,8 +25,9 @@ ReversiPosition Algorithm::initMaxValue(const ReversiBoard& currentBoard, uint_f
 	uint_fast16_t v = numeric_limits<uint_fast16_t>::min();
 	ReversiPosition bestMove = action;
 	do {
+		
 		ReversiBoard nextBoard = currentBoard;
-		uint_fast16_t minTest = minValue(result(nextBoard,action), alpha, beta);
+		uint_fast16_t minTest = minValue(nextBoard, alpha, beta);
 		if(minTest > v){
 			v = minTest;
 			bestMove = action;
@@ -79,6 +80,7 @@ uint_fast16_t Algorithm::minValue(const ReversiBoard& currentBoard, uint_fast16_
 		}
 		beta = min(beta, v);
 		currentBoard.getNextPossibleMove(action);
+
 	} while (action.isValid());
 	return v;
 }
