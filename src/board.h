@@ -15,7 +15,7 @@ class Board {
 public:
 	typedef BoardPosition<boardWidth,boardHeight> BoardPos;
 	typedef BitVector<boardWidth * boardHeight, 2, boardWidth> BoardVector;
-	static const uint_fast8_t Light = 0b10;
+	static const uint_fast8_t Light = 0b01;
 	static const uint_fast8_t Dark = 0b11;
 
 	Board() : whoseTurn(Dark) {
@@ -27,8 +27,8 @@ public:
 
 	Board(const Board& other) : whoseTurn(other.whoseTurn), theBoard(other.theBoard) {}
 
-	bool isLegalMove(const BoardPos& action) const {
-		if(!(action.x < 8 && action.y < 8 && theBoard.matrixGet(action.x,action.y) == 0)) {
+	bool isLegalMove(const BoardPos& action, BoardDirection& dir) const {
+		if(!(action.isValid() && theBoard.matrixGet(action.x,action.y) == 0)) {
 			return false;
 		}
 
@@ -39,19 +39,27 @@ public:
 		}
 		return false;
 	}
+
+	bool isLegalMove(const BoardPos& action) const {
+		BoardDirection dir;
+		return isLegalMove(action,dir);
+	}
 	
 	bool checkDir(const BoardPos& startPosition, const BoardDirection& dir) const {
-		const uint_fast8_t oppositeColor = whoseTurn ^ 0b01;
+		const uint_fast8_t oppositeColor = whoseTurn ^ 0b10;
 		BoardPos currentPosition(startPosition);
 
 		currentPosition.add(dir);
-		if(isOppositeColor(currentPosition, oppositeColor)) {
-			do {
-				currentPosition.add(dir);
-				if(!isOppositeColor(currentPosition, oppositeColor)){
-					return true;
-				}
-			} while (currentPosition.isValid());
+		if(currentPosition.isValid() && theBoard.matrixGet(currentPosition.x,currentPosition.y) == oppositeColor) {
+			currentPosition.add(dir);
+			if(currentPosition.isValid()) {
+				do {
+					if(theBoard.matrixGet(currentPosition.x,currentPosition.y) == whoseTurn){
+						return true;
+					}
+					currentPosition.add(dir);
+				} while (currentPosition.isValid());
+			}
 		}
 		return false;
 	}
@@ -108,12 +116,14 @@ public:
 
 	void makeMove(const BoardPos& action) {
 		theBoard.matrixPut(action.x,action.y,whoseTurn);
-		whoseTurn ^= 0b01;
+		whoseTurn ^= 0b10;
 	}
 
 	void printBoard(){
 		BoardPos pos;
+		cout << " abcdefgh" << endl;
 		for(;pos.y != boardHeight;++pos.y) {
+			cout << static_cast<int>(pos.y+1);
 			for(;pos.x != boardWidth;++pos.x) {
 				cout << getColor(theBoard.matrixGet(pos.x,pos.y));
 			}
