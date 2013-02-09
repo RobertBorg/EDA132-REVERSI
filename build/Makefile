@@ -18,6 +18,11 @@ else
 	CXXFLAGS += -O2
 endif
 
+NOOPT = false
+ifeq ($(NOOPT), true)
+	CXXFLAGS += -O2
+endif
+
 ALLTARGETS = reversi
 
 VPATH= ../src/
