@@ -7,16 +7,17 @@ using std::min;
 using std::max;
 
 uint_fast32_t Algorithm::numNodesVisited = 0;
+time_point<std::chrono::system_clock> Algorithm::start;
+bool Algorithm::terminate;
 
 ReversiPosition Algorithm::alphaBetaSearch(const ReversiBoard& currentBoard){
+	terminate = false;
+	start = std::chrono::system_clock::now();
 	return initMaxValue(currentBoard,numeric_limits<uint_fast16_t>::min(),numeric_limits<uint_fast16_t>::max());
 }
 
 ReversiPosition Algorithm::initMaxValue(const ReversiBoard& currentBoard, uint_fast16_t alpha, uint_fast16_t beta) {
 	ReversiPosition action;
-	if(++numNodesVisited %1000000 == 0) {
-		cout << numNodesVisited << endl;
-	}
 	if(currentBoard.terminalTest(action)){
 		return action;
 	}
@@ -38,13 +39,13 @@ ReversiPosition Algorithm::initMaxValue(const ReversiBoard& currentBoard, uint_f
 
 uint_fast16_t Algorithm::maxValue(const ReversiBoard& currentBoard, uint_fast16_t alpha, uint_fast16_t beta) {
 	ReversiPosition action;
-	if(++numNodesVisited %1000000 == 0) {
-		cout << numNodesVisited << endl;
-	}
 	if(currentBoard.terminalTest(action)){
 		return currentBoard.utility();
 	}
 	uint_fast16_t v = numeric_limits<uint_fast16_t>::min();
+	if(checkRuntime()) {
+		return currentBoard.utility();
+	}
 	do {
 		{
 			ReversiBoard nextBoard = currentBoard;
@@ -61,13 +62,13 @@ uint_fast16_t Algorithm::maxValue(const ReversiBoard& currentBoard, uint_fast16_
 
 uint_fast16_t Algorithm::minValue(const ReversiBoard& currentBoard, uint_fast16_t alpha, uint_fast16_t beta) {
 	ReversiPosition action;
-	if(++numNodesVisited %1000000 == 0) {
-		cout << numNodesVisited << endl;
-	}
 	if(currentBoard.terminalTest(action)){
 		return currentBoard.utility();
 	}
 	uint_fast16_t v = numeric_limits<uint_fast16_t>::max();
+	if(checkRuntime()) {
+		return currentBoard.utility();
+	}
 	do {
 		{
 			ReversiBoard nextBoard = currentBoard;
