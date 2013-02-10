@@ -41,7 +41,7 @@ all: $(ALLTARGETS)
 
 
 # Linking:
-reversi: reversi.o algorithm.o board_direction.o
+reversi: reversi.o algorithm.o
 
 
 # Dependencies, the implicit rule .cc => .o is used
