@@ -3,7 +3,7 @@
 
 #include <cstddef>
 #include <iostream>
-#include "bit_vector.h"
+#include "board_vector.h"
 #include "board_position.h"
 #include "board_direction.h"
 
@@ -14,7 +14,7 @@ template<uint_fast8_t boardWidth = 8, uint_fast8_t boardHeight = 8 >
 class Board {
 public:
 	typedef BoardPosition<boardWidth,boardHeight> BoardPos;
-	typedef BitVector<boardWidth * boardHeight, 2, boardWidth> BoardVector;
+	//typedef  vector<uint_fast8_t> BoardVector;
 	static const uint_fast8_t Light = 0b01;
 	static const uint_fast8_t Dark = 0b11;
 
@@ -119,7 +119,7 @@ public:
 		whoseTurn ^= 0b10;
 	}
 
-	void printBoard(){
+	void printBoard() {
 		BoardPos pos;
 		cout << " abcdefgh" << endl;
 		for(;pos.y != boardHeight;++pos.y) {
@@ -156,7 +156,7 @@ public:
 
 private:
 	uint_fast8_t whoseTurn;
-	BoardVector theBoard;
+	BoardVector<boardWidth * boardHeight, boardWidth> theBoard;
 };
 
 #endif /* end of include guard: BOARD_H__ */
