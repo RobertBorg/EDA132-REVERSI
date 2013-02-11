@@ -6,6 +6,7 @@
 #include "board_vector.h"
 #include "board_position.h"
 #include "board_direction.h"
+#include "board_rectangle.h"
 
 using std::cout;
 using std::endl;
@@ -14,7 +15,6 @@ template<uint_fast8_t boardWidth = 8, uint_fast8_t boardHeight = 8 >
 class Board {
 public:
 	typedef BoardPosition<boardWidth,boardHeight> BoardPos;
-	//typedef  vector<uint_fast8_t> BoardVector;
 	static const uint_fast8_t Light = 0b01;
 	static const uint_fast8_t Dark = 0b11;
 
@@ -32,7 +32,7 @@ public:
 			return false;
 		}
 
-		for (BoardDirection dir; dir != INVALID_DIRECTION; ++dir) {
+		for (; dir != INVALID_DIRECTION; ++dir) {
 			if(checkDir(action, dir)){
 				return true;
 			}
@@ -51,15 +51,17 @@ public:
 
 		currentPosition.add(dir);
 		if(currentPosition.isValid() && theBoard.matrixGet(currentPosition.x,currentPosition.y) == oppositeColor) {
-			currentPosition.add(dir);
-			if(currentPosition.isValid()) {
-				do {
-					if(theBoard.matrixGet(currentPosition.x,currentPosition.y) == whoseTurn){
-						return true;
-					}
-					currentPosition.add(dir);
-				} while (currentPosition.isValid());
-			}
+			do {
+				currentPosition.add(dir);
+				uint_fast8_t tile = theBoard.matrixGet(currentPosition.x,currentPosition.y);
+				if(tile == 0){
+					return false;
+				}
+				if( tile == whoseTurn){
+					return true;
+				}
+				
+			} while (currentPosition.isValid());
 		}
 		return false;
 	}
@@ -68,15 +70,46 @@ public:
 		return theBoard.matrixGet(position.x,position.y) == oppositeColor;
 	}
 
-	bool terminalTest(BoardPos& action) const{
-		getNextPossibleMove(action);
+	bool terminalTest(BoardPos& action, const BoardRectangle& rect) const{
+		getNextPossibleMove(action,rect);
 		return !action.isValid();
 	}
 
-	void getNextPossibleMove(BoardPos& action) const{
-		for(;action.y != boardHeight;) {
-			if(isLegalMove(++action)){
-				return;
+	bool terminalTest() const{
+		BoardPos action;
+		BoardRectangle rect;
+
+		rect.first.x = 0;
+		rect.first.y = 0;
+		rect.second.x = 8;
+		rect.second.y = 8;
+
+		getNextPossibleMove(action,rect);
+		return !action.isValid();
+	}
+
+	void getNextPossibleMove(BoardPos& action, const BoardRectangle& rect) const{
+		for(;action.y != rect.second.y ;++action.y) {
+			for(;action.x != rect.second.y ;++action.x) {
+				if(isLegalMove(action)){
+					return;
+				}
+			}
+			action.x = rect.first.x;
+		}
+		action.y = boardHeight;
+	}
+
+	void flipTiles(const BoardPos& action, const BoardDirection& dir){
+		BoardPos pos = action;
+		const uint_fast8_t otherColor = whoseTurn ^ 0b10;
+		while(1) {
+			pos.add(dir);
+			uint_fast8_t& tile = theBoard.matrixGet(pos.x, pos.y);
+			if(tile == otherColor){
+				tile = whoseTurn;
+			} else {
+				break;
 			}
 		}
 	}
@@ -113,13 +146,41 @@ public:
 		}
 		return points;
 	}
-
 	void makeMove(const BoardPos& action) {
+		BoardDirection dir;
+		while(isLegalMove(action, dir)){
+			flipTiles(action, dir);
+			++dir;
+		}
 		theBoard.matrixPut(action.x,action.y,whoseTurn);
 		whoseTurn ^= 0b10;
 	}
 
-	void printBoard() {
+	void makeMoveWithRectangleExpansion(const BoardPos& action, BoardRectangle& currentRangeOfPossibleMoves) {
+		makeMove(action);
+		if(action.x == currentRangeOfPossibleMoves.first.x) {
+			if(--currentRangeOfPossibleMoves.first.x > boardWidth){
+				++currentRangeOfPossibleMoves.first.x;
+			}
+		}
+		if(action.x == currentRangeOfPossibleMoves.second.x -1) {
+			if(++currentRangeOfPossibleMoves.second.x > boardWidth) {
+				--currentRangeOfPossibleMoves.second.x;
+			}
+		}
+		if(action.y == currentRangeOfPossibleMoves.first.y) {
+			if(--currentRangeOfPossibleMoves.first.y > boardHeight) {
+				++currentRangeOfPossibleMoves.first.y;
+			}
+		}
+		if(action.y == currentRangeOfPossibleMoves.second.y - 1) {
+			if(++currentRangeOfPossibleMoves.second.y > boardHeight){
+				--currentRangeOfPossibleMoves.second.y;
+			}
+		}
+	}
+
+	void printBoard() const {
 		BoardPos pos;
 		cout << " abcdefgh" << endl;
 		for(;pos.y != boardHeight;++pos.y) {
@@ -147,7 +208,7 @@ public:
 	}
 
 	bool tryMakeMove(const BoardPos& action) {
-		if(action.isValid() && islegalMove(action)) {
+		if(action.isValid() && isLegalMove(action)) {
 			makeMove(action);
 			return true;
 		}

@@ -15,6 +15,7 @@ enum direction_t {
 					UP_LEFT,
 					INVALID_DIRECTION
 				};
+				
 inline direction_t& operator++(direction_t& dir) {
 	dir = static_cast<direction_t>(dir + 1);
 	return dir;

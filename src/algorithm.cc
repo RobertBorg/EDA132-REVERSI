@@ -13,12 +13,14 @@ bool Algorithm::terminate;
 ReversiPosition Algorithm::alphaBetaSearch(const ReversiBoard& currentBoard){
 	terminate = false;
 	start = std::chrono::system_clock::now();
-	return initMaxValue(currentBoard,numeric_limits<uint_fast16_t>::min(),numeric_limits<uint_fast16_t>::max());
+	numNodesVisited = 0;
+	BoardRectangle rect;
+	return initMaxValue(currentBoard,numeric_limits<uint_fast16_t>::min(),numeric_limits<uint_fast16_t>::max(),rect);
 }
 
-ReversiPosition Algorithm::initMaxValue(const ReversiBoard& currentBoard, uint_fast16_t alpha, uint_fast16_t beta) {
+ReversiPosition Algorithm::initMaxValue(const ReversiBoard& currentBoard, uint_fast16_t alpha, uint_fast16_t beta, const BoardRectangle& currentRangeOfPossibleMoves) {
 	ReversiPosition action;
-	if(currentBoard.terminalTest(action)){
+	if(currentBoard.terminalTest(action, currentRangeOfPossibleMoves)){
 		return action;
 	}
 
@@ -27,21 +29,22 @@ ReversiPosition Algorithm::initMaxValue(const ReversiBoard& currentBoard, uint_f
 	do {
 		
 		ReversiBoard nextBoard = currentBoard;
-		result(currentBoard,action);
-		uint_fast16_t minTest = minValue(nextBoard, alpha, beta);
+		BoardRectangle nextPossibleMoves = currentRangeOfPossibleMoves;
+		result(nextBoard, action, nextPossibleMoves);
+		uint_fast16_t minTest = minValue(nextBoard, alpha, beta, nextPossibleMoves);
 		if(minTest > v){
 			v = minTest;
 			bestMove = action;
 		}
 		alpha = max(alpha, v);			
-		currentBoard.getNextPossibleMove(action);
+		currentBoard.getNextPossibleMove(++action, currentRangeOfPossibleMoves);
 	}while (action.isValid());
 	return bestMove;
 }
 
-uint_fast16_t Algorithm::maxValue(const ReversiBoard& currentBoard, uint_fast16_t alpha, uint_fast16_t beta) {
+uint_fast16_t Algorithm::maxValue(const ReversiBoard& currentBoard, uint_fast16_t alpha, uint_fast16_t beta, const BoardRectangle& currentRangeOfPossibleMoves) {
 	ReversiPosition action;
-	if(currentBoard.terminalTest(action)){
+	if(currentBoard.terminalTest(action, currentRangeOfPossibleMoves)){
 		return currentBoard.utility();
 	}
 	uint_fast16_t v = numeric_limits<uint_fast16_t>::min();
@@ -51,20 +54,22 @@ uint_fast16_t Algorithm::maxValue(const ReversiBoard& currentBoard, uint_fast16_
 	do {
 		{
 			ReversiBoard nextBoard = currentBoard;
-			v = max(v, minValue(result(nextBoard,action), alpha, beta));
+			BoardRectangle nextPossibleMoves = currentRangeOfPossibleMoves;
+			result(nextBoard, action, nextPossibleMoves);
+			v = max(v, minValue(nextBoard, alpha, beta, nextPossibleMoves));
 		}
 		if(v>=beta){
 			return v;
 		}
 		alpha = max(alpha, v);			
-		currentBoard.getNextPossibleMove(action);
+		currentBoard.getNextPossibleMove(++action, currentRangeOfPossibleMoves);
 	}while (action.isValid());
 	return v;
 }
 
-uint_fast16_t Algorithm::minValue(const ReversiBoard& currentBoard, uint_fast16_t alpha, uint_fast16_t beta) {
+uint_fast16_t Algorithm::minValue(const ReversiBoard& currentBoard, uint_fast16_t alpha, uint_fast16_t beta, const BoardRectangle& currentRangeOfPossibleMoves) {
 	ReversiPosition action;
-	if(currentBoard.terminalTest(action)){
+	if(currentBoard.terminalTest(action, currentRangeOfPossibleMoves)){
 		return currentBoard.utility();
 	}
 	uint_fast16_t v = numeric_limits<uint_fast16_t>::max();
@@ -74,13 +79,15 @@ uint_fast16_t Algorithm::minValue(const ReversiBoard& currentBoard, uint_fast16_
 	do {
 		{
 			ReversiBoard nextBoard = currentBoard;
-			v = min(v, maxValue(result(nextBoard,action), alpha, beta));
+			BoardRectangle nextPossibleMoves = currentRangeOfPossibleMoves;
+			result(nextBoard, action, nextPossibleMoves);
+			v = min(v, maxValue(nextBoard, alpha, beta, nextPossibleMoves));
 		}
 		if(v<=alpha){
 			return v;
 		}
 		beta = min(beta, v);
-		currentBoard.getNextPossibleMove(action);
+		currentBoard.getNextPossibleMove(++action, currentRangeOfPossibleMoves);
 
 	} while (action.isValid());
 	return v;

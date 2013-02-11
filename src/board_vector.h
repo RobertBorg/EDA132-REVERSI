@@ -22,7 +22,15 @@ public:
 		return get(numElementsPerRow * y + x);
 	}
 
+	uint_fast8_t& matrixGet(const size_t x, const size_t y) {
+		return get(numElementsPerRow * y + x);
+	}
+
 	const uint_fast8_t get(const size_t index) const {
+		return mem[index];
+	}
+
+	uint_fast8_t& get(const size_t index) {
 		return mem[index];
 	}
 
