@@ -29,7 +29,7 @@ VPATH= ../src/
 
 sources = $(wildcard *.cc) $(notdir $(foreach dir,$(VPATH),$(wildcard $(dir)/*.cc)))
 
-.PHONY: install uninstall all clean cleaner
+.PHONY: install uninstall all clean cleaner profile
 
 all: $(ALLTARGETS)
 
@@ -43,6 +43,8 @@ all: $(ALLTARGETS)
 # Linking:
 reversi: reversi.o algorithm.o
 
+profile: reversi
+	LD_PRELOAD="/usr/local/lib/libprofiler.so" CPUPROFILE=/tmp/mybin.prof ./reversi
 
 # Dependencies, the implicit rule .cc => .o is used
 include $(sources:.cc=.dd)
